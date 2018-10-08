@@ -115,13 +115,16 @@ class BaseAliPay():
 
         return sorted([(k, v) for k, v in data.items()])
 
-    def build_body(self, method, biz_content, return_url=None, append_auth_token=False):
+    def build_body(self, method, biz_content, return_url=None, append_auth_token=False,
+                   timestamp=None):
+        if not timestamp:
+            timestamp = datetime.now()
         data = {
             "app_id": self._appid,
             "method": method,
             "charset": "utf-8",
             "sign_type": self._sign_type,
-            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "timestamp": timestamp.strftime("%Y-%m-%d %H:%M:%S"),
             "version": "1.0",
             "biz_content": biz_content
         }
@@ -185,7 +188,8 @@ class BaseAliPay():
         raise AttributeError("Unknown attribute" + api_name)
 
     def api_alipay_trade_wap_pay(self, subject, out_trade_no,
-                                 total_amount, return_url=None, **kwargs):
+                                 total_amount, return_url=None, timestamp=None,
+                                 **kwargs):
         biz_content = {
             "subject": subject,
             "out_trade_no": out_trade_no,
@@ -193,10 +197,12 @@ class BaseAliPay():
             "product_code": "QUICK_WAP_PAY"
         }
         biz_content.update(kwargs)
-        data = self.build_body("alipay.trade.wap.pay", biz_content, return_url)
+        data = self.build_body("alipay.trade.wap.pay", biz_content, return_url,
+                               timestamp=timestamp)
         return self.sign_data(data)
 
-    def api_alipay_trade_app_pay(self, subject, out_trade_no, total_amount, **kwargs):
+    def api_alipay_trade_app_pay(self, subject, out_trade_no, total_amount,
+                                 timestamp=None,**kwargs):
         biz_content = {
             "subject": subject,
             "out_trade_no": out_trade_no,
@@ -204,11 +210,12 @@ class BaseAliPay():
             "product_code": "QUICK_MSECURITY_PAY"
         }
         biz_content.update(kwargs)
-        data = self.build_body("alipay.trade.app.pay", biz_content)
+        data = self.build_body("alipay.trade.app.pay", biz_content,
+                               timestamp=timestamp)
         return self.sign_data(data)
 
     def api_alipay_trade_page_pay(self, subject, out_trade_no, total_amount,
-                                  return_url=None, **kwargs):
+                                  return_url=None, timestamp=None, **kwargs):
         biz_content = {
             "subject": subject,
             "out_trade_no": out_trade_no,
@@ -217,7 +224,8 @@ class BaseAliPay():
         }
 
         biz_content.update(kwargs)
-        data = self.build_body("alipay.trade.page.pay", biz_content, return_url)
+        data = self.build_body("alipay.trade.page.pay", biz_content, return_url,
+                               timestamp=timestamp)
         return self.sign_data(data)
 
     def api_alipay_trade_query(self, out_trade_no=None, trade_no=None):
